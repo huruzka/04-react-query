@@ -15,9 +15,7 @@ const apiClient = axios.create({
 });
 
 
-export const fetchMovies = async (query: string): Promise<Movie[]> => {
-    const { data } = await apiClient.get<TmdbResponse>("/search/movie", {
-        params: { query },
-    });
-    return data.results;
+export const fetchMovies = async () => {
+    const { data } = await apiClient.get<TmdbResponse>("/search/movie");
+    return data.results, data.total_pages;
 };
