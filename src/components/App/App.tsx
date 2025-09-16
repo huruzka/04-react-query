@@ -5,19 +5,30 @@ import type { Movie } from '../../types/movie';
 import { useState } from "react";
 import { fetchMovies } from '../../services/movieService';
 import MovieModal from '../MovieModal/MovieModal';
-
-
+import { useQuery } from '@tanstack/react-query';
+import Toaster from "react-hot-toast";
+import Loader from '../Loader/Loader';
+import ErrorMessage from '../ErrorMessage/ErrorMessage';
 
 function App() {
-  const [movies, setMovies] = useState<Movie[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
-  const { data, error, isLoading, isError } = useQuery({
-    queryKey: ['movie'],   // ключ запиту
-    queryFn: fetchMovies,  // функція запиту
-});
+  const {data, isLoading, isError} = useQuery({
+    queryKey: ['movies', searchTerm],
+    queryFn: () => fetchMovies(searchTerm),
+    enabled: !!searchTerm,
+  });
+ 
+  //useEffect(() => {
+    //    if (isError) {
+       //     toast.error("There was an error, please try again...");
+        //}
+        // Було: data.movies.length === 0
+       // if (data && data.results.length === 0) {
+         //   toast.error("No movies found for your request.");
+       // }
+ // }, [isError, data]);
   
-
-
   const handleSelectMovie = (movie: Movie) => {
     setSelectedMovie(movie);
   };
@@ -26,13 +37,17 @@ function App() {
     setSelectedMovie(null);
   };
 
+  const handleSearch = (query: string) => {
+    setSearchTerm(query);
+  };
+
   return (
     <div>
-      {isLoading && <p>Loading...</p>}
-      {isError && <p>An error occurred: {error.message}</p>}
-      {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
-      <SearchBar onSubmit={fetchMovies} />
-      <MovieGrid movies={movies} onSelect={handleSelectMovie} />
+      <Toaster  />
+      <SearchBar onSubmit={handleSearch} />
+      {isLoading && <Loader />}
+      {isError && !isLoading && <ErrorMessage />}
+      <MovieGrid movies={data ?? []} onSelect={handleSelectMovie} />
       {selectedMovie && (
         <MovieModal 
           movie={selectedMovie} 
