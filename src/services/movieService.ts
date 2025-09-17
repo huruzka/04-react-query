@@ -1,9 +1,11 @@
 import axios from "axios";
 import type { Movie } from "../types/movie";
 
-interface TmdbResponse {
+export interface TmdbResponse {
   results: Movie[];
   total_pages: number;
+  page: number;
+  total_results: number;
 }
 
 const myKey = import.meta.env.VITE_MY_API;
@@ -16,12 +18,14 @@ const apiClient = axios.create({
   },
 });
 
-export const fetchMovies = async (query: string) => {
-  if (!query) return [];
+export const fetchMovies = async (query: string, page: number = 1): Promise<TmdbResponse> => {
+  if (!query) {
+    return { results: [], total_pages: 0, page: 1, total_results: 0 };
+  }
 
   const { data } = await apiClient.get<TmdbResponse>("/search/movie", {
-    params: { query },
+    params: { query, page },
   });
 
-  return data.results;
+  return data;
 };

@@ -7,4 +7,5 @@ export interface Movie {
     release_date: string;
     vote_average: number;
     total_pages: number;
+    page: number;
 }
